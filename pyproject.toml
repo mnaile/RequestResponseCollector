@@ -5,6 +5,9 @@ description = ""
 authors = ["Naila <mammadaliyevan@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/mnaile/RequestResponseCollector"
+packages = [
+    {include = "collector"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
