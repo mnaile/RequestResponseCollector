@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "requestresponsecollector"
+version = "0.1.0"
+description = ""
+authors = ["Naila <mammadaliyevan@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/mnaile/RequestResponseCollector"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.2"
+aiohttp = "^3.8.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
