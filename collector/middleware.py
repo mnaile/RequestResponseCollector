@@ -44,7 +44,7 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
             "query_params": str(request.query_params),
             "service_name": request.url.path.split("/")[1],
             "source": request.headers["service-name"],
-            "response_body": json.loads(response_body),
+            "response_body": response_body,
             "status_code": str(response.status_code),
         }
 
