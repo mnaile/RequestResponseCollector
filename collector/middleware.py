@@ -1,6 +1,7 @@
 import json
 
 from fastapi import Request
+from fastapi.encoders import jsonable_encoder
 from starlette.concurrency import iterate_in_threadpool
 from starlette.middleware.base import (
     BaseHTTPMiddleware,
@@ -44,7 +45,7 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
             "query_params": str(request.query_params),
             "service_name": request.url.path.split("/")[1],
             "source": request.headers["service-name"],
-            "response_body": response_body,
+            "response_body": json.loads(jsonable_encoder(response_body)[0]),
             "status_code": str(response.status_code),
         }
 
