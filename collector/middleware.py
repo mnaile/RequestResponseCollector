@@ -29,24 +29,27 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
         request._stream_consumed = False
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
-        req_body = await request.body()
-        await self.set_body(request, req_body)
-        req_body = json.loads(req_body) if req_body else None
-        response = await call_next(request)
+        if "readiness" not in request.url.path and "health" not in request.url.path:
+            req_body = await request.body()
+            await self.set_body(request, req_body)
+            req_body = json.loads(req_body) if req_body else None
+            response = await call_next(request)
 
-        response_body = [chunk async for chunk in response.body_iterator]
-        response.body_iterator = iterate_in_threadpool(iter(response_body))
-        data = {
-            "headers": dict(request.headers),
-            "url": str(request.url),
-            "method": request.method,
-            "request_body": req_body,
-            "query_params": str(request.query_params),
-            "service_name": request.url.path.split("/")[1],
-            "source": request.headers.get("service-name"),
-            "response_body": jsonable_encoder(response_body) if response_body else {},
-            "status_code": str(response.status_code),
-        }
+            response_body = [chunk async for chunk in response.body_iterator]
+            response.body_iterator = iterate_in_threadpool(iter(response_body))
+            data = {
+                "headers": dict(request.headers),
+                "url": str(request.url),
+                "method": request.method,
+                "request_body": req_body,
+                "query_params": str(request.query_params),
+                "service_name": request.url.path.split("/")[1],
+                "source": request.headers.get("service-name"),
+                "response_body": jsonable_encoder(response_body)
+                if response_body
+                else {},
+                "status_code": str(response.status_code),
+            }
 
-        await self.action_log.create_action_log(data, self.url)
-        return response
+            await self.action_log.create_action_log(data, self.url)
+            return response
