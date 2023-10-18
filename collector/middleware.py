@@ -11,14 +11,20 @@ from starlette.middleware.base import (
 from starlette.types import ASGIApp
 
 from collector.client import ActionLogClient
+import re
 
 
 class ActionLogMiddleware(BaseHTTPMiddleware):
     def __init__(
-        self, app: ASGIApp, url: str, dispatch: DispatchFunction | None = None
+        self,
+        app: ASGIApp,
+        url: str,
+        dispatch: DispatchFunction | None = None,
+        exclude_path: list[str] = None,
     ) -> None:
         self.url = url
         self.action_log = ActionLogClient()
+        self.exclude_path: list[re.Pattern] = [re.compile(i) for i in exclude_path]
         super().__init__(app, dispatch)
 
     async def set_body(self, request: Request, body: bytes):
@@ -28,8 +34,14 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
         request._receive = receive
         request._stream_consumed = False
 
+    def check_exclude_path(self, request_path: str):
+        for pattern in self.exclude_path:
+            if pattern.search(request_path):
+                return True
+        return False
+
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
-        if "readiness" not in request.url.path and "health" not in request.url.path:
+        if not self.check_exclude_path(request.url.path):
             req_body = await request.body()
             await self.set_body(request, req_body)
             req_body = json.loads(req_body) if req_body else None
@@ -53,3 +65,4 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
 
             await self.action_log.create_action_log(data, self.url)
             return response
+        return await call_next(request)
