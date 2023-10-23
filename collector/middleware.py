@@ -1,3 +1,4 @@
+import re
 import json
 
 from fastapi import Request
@@ -11,7 +12,6 @@ from starlette.middleware.base import (
 from starlette.types import ASGIApp
 
 from collector.client import ActionLogClient
-import re
 
 
 class ActionLogMiddleware(BaseHTTPMiddleware):
@@ -42,9 +42,14 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         if not self.check_exclude_path(request.url.path):
-            req_body = await request.body()
-            await self.set_body(request, req_body)
-            req_body = json.loads(req_body) if req_body else None
+            req_body = None
+            if (
+                not request.headers.get("content-type")
+                or request.headers.get("content-type") == "application/json"
+            ):
+                req_body = await request.body()
+                await self.set_body(request, req_body)
+                req_body = json.loads(req_body) if req_body else None
             response = await call_next(request)
 
             response_body = [chunk async for chunk in response.body_iterator]
@@ -62,7 +67,6 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                 else {},
                 "status_code": str(response.status_code),
             }
-
             await self.action_log.create_action_log(data, self.url)
             return response
         return await call_next(request)
