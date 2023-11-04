@@ -62,6 +62,7 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                 "query_params": str(request.query_params),
                 "service_name": request.url.path.split("/")[1],
                 "source": request.headers.get("service-name"),
+                "path_params": request.path_params,
                 "response_body": jsonable_encoder(response_body)
                 if response_body
                 else {},
