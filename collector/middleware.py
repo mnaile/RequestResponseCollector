@@ -1,6 +1,6 @@
 import re
 import json
-
+from typing import Union
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from starlette.concurrency import iterate_in_threadpool
@@ -19,7 +19,7 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         url: str,
-        dispatch: DispatchFunction | None = None,
+        dispatch: Union[DispatchFunction, None] = None,
         exclude_path: list[str] = None,
     ) -> None:
         self.url = url
