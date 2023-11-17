@@ -1,5 +1,6 @@
 import re
 import json
+import asyncio
 from typing import Union
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
@@ -68,6 +69,6 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                 else {},
                 "status_code": str(response.status_code),
             }
-            await self.action_log.create_action_log(data, self.url)
+            asyncio.create_task(self.action_log.create_action_log(data, self.url)) 
             return response
         return await call_next(request)
