@@ -1,6 +1,8 @@
 import re
 import json
 import asyncio
+import structlog
+
 from typing import Union
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
@@ -13,6 +15,8 @@ from starlette.middleware.base import (
 from starlette.types import ASGIApp
 
 from collector.client import ActionLogClient
+from collector.log_setup import configure_logger
+
 
 
 class ActionLogMiddleware(BaseHTTPMiddleware):
@@ -20,12 +24,17 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         url: str,
+        logger_name: str,
         dispatch: Union[DispatchFunction, None] = None,
         exclude_path: list[str] = None,
     ) -> None:
         self.url = url
+        self.logger_name = logger_name
         self.action_log = ActionLogClient()
         self.exclude_path: list[re.Pattern] = [re.compile(i) for i in exclude_path]
+        configure_logger(enable_json_logs=True, logger_name=logger_name)
+        self.logger = structlog.stdlib.get_logger(logger_name)
+
         super().__init__(app, dispatch)
 
     async def set_body(self, request: Request, body: bytes):
@@ -70,5 +79,13 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                 "status_code": str(response.status_code),
             }
             asyncio.create_task(self.action_log.create_action_log(data, self.url)) 
+
+            req_id = request.headers.get("request-id")
+            structlog.contextvars.clear_contextvars()
+            structlog.contextvars.bind_contextvars(
+                request_id=req_id,
+            )
+            await self.logger.info(data)
+
             return response
         return await call_next(request)
