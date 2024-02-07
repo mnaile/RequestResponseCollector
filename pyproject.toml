@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "requestresponsecollector"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 authors = ["Naila <mammadaliyevan@gmail.com>"]
 readme = "README.md"
@@ -10,9 +10,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-fastapi = "^0.97.0"
-aiohttp = "^3.8.6"
+python = "^3.8.2"
+aiohttp = ">=3.8.6,<3.9.4"
 
 
 [build-system]
