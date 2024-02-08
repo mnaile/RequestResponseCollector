@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "requestresponsecollector"
-version = "0.2.3"
+version = "0.2.4"
 description = ""
 authors = ["Naila <mammadaliyevan@gmail.com>"]
 readme = "README.md"
