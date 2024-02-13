@@ -79,7 +79,7 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                 }
                 asyncio.create_task(self.action_log.create_action_log(data, self.url))
 
-                self.logger.info(data)
+                self.logger.debug(data)
 
                 return response
             return await call_next(request)
