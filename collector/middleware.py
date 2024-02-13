@@ -56,8 +56,8 @@ class ActionLogMiddleware(BaseHTTPMiddleware):
                     or request.headers.get("content-type") == "application/json"
                 ):
                     req_body = await request.body()
-                    if req_body:
-                        await self.set_body(request, req_body)
+                    # if req_body:
+                    #     await self.set_body(request, req_body)
                     req_body = json.loads(req_body) if req_body else None
                 response = await call_next(request)
 
